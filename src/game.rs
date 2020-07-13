@@ -33,23 +33,33 @@ pub fn run_game() {
         let mut valid_move = false;
         while !valid_move {
 
+            //get piece player wants to move
             println!("Piece to move:"); 
             let mut piece_to_move = String::new();
-            //read into piece_to_move
-            io::stdin()
-                .read_line(&mut piece_to_move)
-                .expect("Failed to read line");
+            io::stdin().read_line(&mut piece_to_move).expect("Failed to read line");
             
+            //check if they've quit
             if piece_to_move.trim() == "quit" {
                 println!("thanks for playing!");
                 std::process::exit(1);
             }
+
+            //get target position
             println!("Target position:  ");
             let mut target_position = String::new();
-            io::stdin()
-                .read_line(&mut target_position)
-                .expect("Failed to read line");  
+            io::stdin().read_line(&mut target_position).expect("Failed to read line");  
+
+            //formatting
             println!();
+
+            //check again if theyve quit
+            if target_position.trim() == "quit" {
+                println!("thanks for playing!");
+                std::process::exit(1);
+            }
+
+
+            //attempt to make a move
             if game.board.make_move(&piece_to_move, &target_position, game.turn) {
                 valid_move = true;
             } else {
@@ -57,11 +67,9 @@ pub fn run_game() {
             }
 
         }
-        
-
-        //check valid move
-        //update board
         //check win status
-        //change turn
+
+        //switch to other players turn
+        game.turn = if game.turn == board::Colour::White { board::Colour::Black } else { board::Colour::White };
     }
 }
