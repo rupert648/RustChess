@@ -52,18 +52,18 @@ impl Board {
     }
 
     pub fn print_board(&self) {
-        let mut line: i8 = 0;
+        let mut line: i8 = 8;
         println!();
-        print!("0 ");
+        print!("8 ");
         for (_i, row) in self.pieces.iter().enumerate() {
             for (_y, col) in row.iter().enumerate() {
                 print!("{} ", col.character);
             }
             println!();
-            line = line+1;
-            if line != 8 { print!("{} ",line);}
+            line = line-1;
+            if line != 0 { print!("{} ",line);}
         }
-        println!("  0 1 2 3 4 5 6 7");
+        println!("  A B C D E F G H");
         println!();
     }
 
@@ -81,7 +81,7 @@ impl Board {
 
         //check its a valid move
         if self.valid_move(&piece_pos, &target_pos, &turn) {
-            println!("nice");
+            return true;
         }
         //check both positions on board first
         // if (on_board(piece_pos) && on_board(target_pos)) {
@@ -90,7 +90,7 @@ impl Board {
         //     println!("Position not on the board!");
         //     false
         // }
-        true
+        false
     }
 
     pub fn valid_move(&mut self, piece_pos: &(usize, usize), target_pos: &(usize, usize), turn:&Colour) -> bool {
@@ -116,6 +116,8 @@ impl Board {
                 self.pieces[target_pos.1][target_pos.0].colour = piece.colour;
                 self.pieces[piece_pos.1][piece_pos.0].character = '.';
                 self.pieces[piece_pos.1][piece_pos.0].colour = Colour::Empty;
+
+                return true;
             }
             
         }
@@ -304,12 +306,12 @@ impl Board {
 
     //returns list of coords of possible knight moves
     pub fn knight_moves(&self, piece_pos: &(usize, usize)) -> Vec<(usize, usize)> {
-        //TODO Implement this shit
+        //TODO: Implement this shit
 
-        let piece = self.pieces[piece_pos.1][piece_pos.0];
-        //vector of unknown size to which we will push the moves
-        //convert into slice then return
-        let mut moves: Vec<(usize, usize)> = Vec::new();
+        // let piece = self.pieces[piece_pos.1][piece_pos.0];
+        // //vector of unknown size to which we will push the moves
+        // //convert into slice then return
+        // let mut moves: Vec<(usize, usize)> = Vec::new();
 
         vec![]
     }
@@ -396,7 +398,7 @@ impl Board {
                 }
             }
         }
-        vec![]
+        moves
     }
     
     //returns list of coords of possible king moves
@@ -413,35 +415,161 @@ impl Board {
                 //if not same colour can take piece
                 // TODO: check that position being moved to isn't under check 
                 if self.pieces[piece_pos.1 - 1][piece_pos.0].colour != piece.colour {
-                    moves
+                    moves.push((piece_pos.0, piece_pos.1 - 1));
                 }
+                //else cant move there
+
             } else {
-                moves.push((piece_pos.1 - 1, piece_pos.0));
+                moves.push((piece_pos.0, piece_pos.1 - 1));
+            }
+
+            //up right
+            if piece_pos.0 != 7 {
+                if self.pieces[piece_pos.1 - 1][piece_pos.0 + 1].colour != Colour::Empty {
+                    //if not same colour can take piece
+                    // TODO: check that position being moved to isn't under check 
+                    if self.pieces[piece_pos.1 - 1][piece_pos.0 + 1].colour != piece.colour {
+                        moves.push((piece_pos.0 + 1, piece_pos.1 - 1));
+                    }
+                    //else cant move there
+    
+                } else {
+                    moves.push((piece_pos.0 + 1, piece_pos.1 - 1));
+                }
+            }
+            //up left
+            if piece_pos.0 != 0 {
+                if self.pieces[piece_pos.1 - 1][piece_pos.0 - 1].colour != Colour::Empty {
+                    //if not same colour can take piece
+                    // TODO: check that position being moved to isn't under check 
+                    if self.pieces[piece_pos.1 - 1][piece_pos.0 - 1].colour != piece.colour {
+                        moves.push((piece_pos.0 - 1, piece_pos.1 - 1));
+                    }
+                    //else cant move there
+    
+                } else {
+                    moves.push((piece_pos.0 - 1, piece_pos.1 - 1));
+                }
             }
         }
-        vec![]
+
+        //left
+        if piece_pos.0 != 0 {
+            if self.pieces[piece_pos.1][piece_pos.0 - 1].colour != Colour::Empty {
+                //if not same colour can take piece
+                // TODO: check that position being moved to isn't under check 
+                if self.pieces[piece_pos.1][piece_pos.0 - 1].colour != piece.colour {
+                    moves.push((piece_pos.0 - 1, piece_pos.1));
+                }
+                //else cant move there
+
+            } else {
+                moves.push((piece_pos.0 - 1, piece_pos.1));
+            }
+        }
+        //right
+        if piece_pos.0 != 7 {
+            if self.pieces[piece_pos.1][piece_pos.0 + 1].colour != Colour::Empty {
+                //if not same colour can take piece
+                // TODO: check that position being moved to isn't under check 
+                if self.pieces[piece_pos.1][piece_pos.0 + 1].colour != piece.colour {
+                    moves.push((piece_pos.0 + 1, piece_pos.1));
+                }
+                //else cant move there
+
+            } else {
+                moves.push((piece_pos.0 + 1, piece_pos.1));
+            }
+        }
+
+        //down
+        if piece_pos.1 != 7 {
+
+            if self.pieces[piece_pos.1 + 1][piece_pos.0].colour != Colour::Empty {
+                //if not same colour can take piece
+                // TODO: check that position being moved to isn't under check 
+                if self.pieces[piece_pos.1 + 1][piece_pos.0].colour != piece.colour {
+                    moves.push((piece_pos.0, piece_pos.1 + 1));
+                }
+                //else cant move there
+
+            } else {
+                moves.push((piece_pos.0, piece_pos.1 + 1));
+            }
+            
+            //up right
+            if piece_pos.0 != 7 {
+                if self.pieces[piece_pos.1 + 1][piece_pos.0 + 1].colour != Colour::Empty {
+                    //if not same colour can take piece
+                    // TODO: check that position being moved to isn't under check 
+                    if self.pieces[piece_pos.1 + 1][piece_pos.0 + 1].colour != piece.colour {
+                        moves.push((piece_pos.0 + 1, piece_pos.1 + 1));
+                    }
+                    //else cant move there
+    
+                } else {
+                    moves.push((piece_pos.0 + 1, piece_pos.1 + 1));
+                }
+            }
+            //up left
+            if piece_pos.0 != 0 {
+                if self.pieces[piece_pos.1 + 1][piece_pos.0 - 1].colour != Colour::Empty {
+                    //if not same colour can take piece
+                    // TODO: check that position being moved to isn't under check 
+                    if self.pieces[piece_pos.1 + 1][piece_pos.0 - 1].colour != piece.colour {
+                        moves.push((piece_pos.0 - 1, piece_pos.1 + 1));
+                    }
+                    //else cant move there
+    
+                } else {
+                    moves.push((piece_pos.0 - 1, piece_pos.1 + 1));
+                }
+            }
+        }
+
+        moves
     }
 
     //returns list of coords of possible queen moves
     fn queen_moves(&self, piece_pos: &(usize, usize)) -> Vec<(usize, usize)> {
-        vec![]
+        //just combine rook and bishop moves nice
+        //vector of unknown size to which we will push the moves
+        let mut moves = self.bishop_moves(piece_pos);
+        let mut b = self.castle_moves(piece_pos);
+
+        moves.append(&mut b);
+        //yeet
+        moves
     }
 }
 
 fn convert(position: &str) -> Option<(usize, usize)> {
-    let coords: Vec<&str> = position.split(",").collect();
-    if coords.len() != 2 {
+    //let coords: Vec<&str> = position.split(",").collect();
+    if position.len() != 2 {
         return None    //poor formatting
     } else {
-        let x: usize = match coords[0].trim().parse() {
-            Ok(num) => if num < 8 {num} else {println!("Coord outside board");
-                                                 return None},
-            Err(_) => return None,  //not a number
+
+        let b: u8 = position.as_bytes()[0];
+        let c: u8 = position.as_bytes()[1];
+        let x: usize = match b as char {
+            'A' => 0,
+            'B' => 1,
+            'C' => 2,
+            'D' => 3,
+            'E' => 4,
+            'F' => 5,
+            'G' => 6,
+            'H' => 7,
+            _ => return None,
         };
-        let y: usize = match coords[1].trim().parse() {
-            Ok(num) => if num < 8 {num} else {println!("Coord outside board");
+        
+        //this code is disgusting and hacky but it seems to work
+        //convert char to u32
+        //subtract from 8 then convert to usize?
+        let y: usize = match (c as char).to_digit(10) {
+            Some(num) => if num < 8 && num >= 1 {(8-num) as usize} else {println!("Coord outside board");
                                                 return None},
-            Err(_) => return None,  //not a number
+            None => return None,  //not a number
         };
         return Some((x, y))
     }
