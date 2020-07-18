@@ -26,22 +26,22 @@ impl Board {
         //starting position
         //hardcoded - could seperate into another files
         let mut p = [[Piece{colour: Colour::Empty, character: '.'}; 8]; 8];
-        p[0][0] = Piece{character:'\u{265C}', colour:Colour::Black};     p[6][0] = Piece{character:'p', colour:Colour::White};
-        p[0][1] = Piece{character:'h', colour:Colour::Black};     p[6][1] = Piece{character:'p', colour:Colour::White};
-        p[0][2] = Piece{character:'b', colour:Colour::Black};     p[6][2] = Piece{character:'p', colour:Colour::White};
-        p[0][3] = Piece{character:'q', colour:Colour::Black};     p[6][3] = Piece{character:'p', colour:Colour::White};
-        p[0][4] = Piece{character:'k', colour:Colour::Black};     p[6][4] = Piece{character:'p', colour:Colour::White};
-        p[0][5] = Piece{character:'b', colour:Colour::Black};     p[6][5] = Piece{character:'p', colour:Colour::White};
-        p[0][6] = Piece{character:'h', colour:Colour::Black};     p[6][6] = Piece{character:'p', colour:Colour::White};
-        p[0][7] = Piece{character:'c', colour:Colour::Black};     p[6][7] = Piece{character:'p', colour:Colour::White};
-        p[1][0] = Piece{character:'p', colour:Colour::Black};     p[7][0] = Piece{character:'\u{2656}', colour:Colour::White};
-        p[1][1] = Piece{character:'p', colour:Colour::Black};     p[7][1] = Piece{character:'h', colour:Colour::White};
-        p[1][2] = Piece{character:'p', colour:Colour::Black};     p[7][2] = Piece{character:'b', colour:Colour::White};
-        p[1][3] = Piece{character:'p', colour:Colour::Black};     p[7][3] = Piece{character:'q', colour:Colour::White};
-        p[1][4] = Piece{character:'p', colour:Colour::Black};     p[7][4] = Piece{character:'k', colour:Colour::White};
-        p[1][5] = Piece{character:'p', colour:Colour::Black};     p[7][5] = Piece{character:'b', colour:Colour::White};
-        p[1][6] = Piece{character:'p', colour:Colour::Black};     p[7][6] = Piece{character:'h', colour:Colour::White};
-        p[1][7] = Piece{character:'p', colour:Colour::Black};     p[7][7] = Piece{character:'c', colour:Colour::White};
+        p[0][0] = Piece{character:'♜', colour:Colour::Black};     p[6][0] = Piece{character:'\u{2659}', colour:Colour::White};
+        p[0][1] = Piece{character:'♞', colour:Colour::Black};     p[6][1] = Piece{character:'\u{2659}', colour:Colour::White};
+        p[0][2] = Piece{character:'♝', colour:Colour::Black};     p[6][2] = Piece{character:'\u{2659}', colour:Colour::White};
+        p[0][3] = Piece{character:'♛', colour:Colour::Black};     p[6][3] = Piece{character:'\u{2659}', colour:Colour::White};
+        p[0][4] = Piece{character:'♚', colour:Colour::Black};     p[6][4] = Piece{character:'\u{2659}', colour:Colour::White};
+        p[0][5] = Piece{character:'♝', colour:Colour::Black};     p[6][5] = Piece{character:'\u{2659}', colour:Colour::White};
+        p[0][6] = Piece{character:'♞', colour:Colour::Black};     p[6][6] = Piece{character:'\u{2659}', colour:Colour::White};
+        p[0][7] = Piece{character:'♜', colour:Colour::Black};     p[6][7] = Piece{character:'\u{2659}', colour:Colour::White};
+        p[1][0] = Piece{character:'\u{265F}', colour:Colour::Black};     p[7][0] = Piece{character:'♖', colour:Colour::White};
+        p[1][1] = Piece{character:'\u{265F}', colour:Colour::Black};     p[7][1] = Piece{character:'♘', colour:Colour::White};
+        p[1][2] = Piece{character:'\u{265F}', colour:Colour::Black};     p[7][2] = Piece{character:'♗', colour:Colour::White};
+        p[1][3] = Piece{character:'\u{265F}', colour:Colour::Black};     p[7][3] = Piece{character:'♕', colour:Colour::White};
+        p[1][4] = Piece{character:'\u{265F}', colour:Colour::Black};     p[7][4] = Piece{character:'♔', colour:Colour::White};
+        p[1][5] = Piece{character:'\u{265F}', colour:Colour::Black};     p[7][5] = Piece{character:'♗', colour:Colour::White};
+        p[1][6] = Piece{character:'\u{265F}', colour:Colour::Black};     p[7][6] = Piece{character:'♘', colour:Colour::White};
+        p[1][7] = Piece{character:'\u{265F}', colour:Colour::Black};     p[7][7] = Piece{character:'♖', colour:Colour::White};
 
         //return the board
         Board {
@@ -52,18 +52,19 @@ impl Board {
     }
 
     pub fn print_board(&self) {
-        let mut line: i8 = 0;
+        let mut line: i8 = 8;
         println!();
-        print!("0 ");
+        print!("8 ");
         for (_i, row) in self.pieces.iter().enumerate() {
             for (_y, col) in row.iter().enumerate() {
                 print!("{} ", col.character);
+                if col.character == '.' {print!(" ");}
             }
             println!();
-            line = line+1;
-            if line != 8 { print!("{} ",line);}
+            line = line-1;
+            if line != 0 { print!("{} ", line);}
         }
-        println!("  0 1 2 3 4 5 6 7");
+        println!("  A  B  C  D  E  F  G  H");
         println!();
     }
 
@@ -81,7 +82,13 @@ impl Board {
 
         //check its a valid move
         if self.valid_move(&piece_pos, &target_pos, &turn) {
-            println!("nice");
+
+            let king_loc = self.get_king_location(&turn);
+
+            if self.is_check(&(0,0), Colour::White) {
+                println!("is check against {}", if turn == Colour::White {"white"} else {"black"});
+            }
+            return true;
         }
         //check both positions on board first
         // if (on_board(piece_pos) && on_board(target_pos)) {
@@ -90,7 +97,7 @@ impl Board {
         //     println!("Position not on the board!");
         //     false
         // }
-        true
+        false
     }
 
     pub fn valid_move(&mut self, piece_pos: &(usize, usize), target_pos: &(usize, usize), turn:&Colour) -> bool {
@@ -101,6 +108,7 @@ impl Board {
         if self.check_valid_piece(&piece_pos, &turn) {
             
             let moves = self.get_piece_moves(piece_pos);
+           
             
             //  for a_move in moves.iter() {
             //     print!("{}, {}", a_move.0, a_move.1);
@@ -116,6 +124,8 @@ impl Board {
                 self.pieces[target_pos.1][target_pos.0].colour = piece.colour;
                 self.pieces[piece_pos.1][piece_pos.0].character = '.';
                 self.pieces[piece_pos.1][piece_pos.0].colour = Colour::Empty;
+
+                return true;
             }
             
         }
@@ -144,12 +154,12 @@ impl Board {
         //pattern match to each piece
         match piece.character {
             //each piece
-            'p' => {self.pawn_moves(piece_pos)},
-            'c' => {self.castle_moves(piece_pos)},
-            'h' => {self.knight_moves(piece_pos)},
-            'b' => {self.bishop_moves(piece_pos)},
-            'k' => {self.king_moves(piece_pos)},
-            'q' => {self.queen_moves(piece_pos)},
+            '♙' | '\u{265F}' => {self.pawn_moves(piece_pos)},
+            '♖' | '♜' => {self.castle_moves(piece_pos)},
+            '♘' | '♞' => {self.knight_moves(piece_pos)},
+            '♗' | '♝' => {self.bishop_moves(piece_pos)},
+            '♔' | '♚' => {self.king_moves(piece_pos)},
+            '♕' | '♛' => {self.queen_moves(piece_pos)},
             _ => vec![]
         }
     }
@@ -182,7 +192,6 @@ impl Board {
                     //or up right or up left if there is a black piece there
                     //uh oh need to do check to see if left is within the board
                     if piece_pos.0 != 0 {
-                        println!("{}", piece_pos.0);
                         if self.pieces[piece_pos.1 - 1][piece_pos.0 - 1].colour == Colour::Black {
                             moves.push((piece_pos.0 - 1, piece_pos.1 - 1));
                         }
@@ -210,12 +219,12 @@ impl Board {
                         moves.push((piece_pos.0, piece_pos.1 + 1));
                     }
                     //or up right or up left if there is a white piece there
-                    if piece_pos.0 != 0 {
+                    if piece_pos.0 + 1 < 8  {
                         if self.pieces[piece_pos.1 + 1][piece_pos.0 + 1].colour == Colour::White {
                             moves.push((piece_pos.0 + 1, piece_pos.1 + 1));
                         }
                     }
-                    if piece_pos.0 + 1 < 8 {
+                    if piece_pos.0 != 0{
                         if self.pieces[piece_pos.1 + 1][piece_pos.0 - 1].colour == Colour::White {
                             moves.push((piece_pos.0 - 1, piece_pos.1 + 1));
                         }
@@ -304,12 +313,12 @@ impl Board {
 
     //returns list of coords of possible knight moves
     pub fn knight_moves(&self, piece_pos: &(usize, usize)) -> Vec<(usize, usize)> {
-        //TODO Implement this shit
+        //TODO: Implement this shit
 
-        let piece = self.pieces[piece_pos.1][piece_pos.0];
-        //vector of unknown size to which we will push the moves
-        //convert into slice then return
-        let mut moves: Vec<(usize, usize)> = Vec::new();
+        // let piece = self.pieces[piece_pos.1][piece_pos.0];
+        // //vector of unknown size to which we will push the moves
+        // //convert into slice then return
+        // let mut moves: Vec<(usize, usize)> = Vec::new();
 
         vec![]
     }
@@ -396,7 +405,7 @@ impl Board {
                 }
             }
         }
-        vec![]
+        moves
     }
     
     //returns list of coords of possible king moves
@@ -413,36 +422,238 @@ impl Board {
                 //if not same colour can take piece
                 // TODO: check that position being moved to isn't under check 
                 if self.pieces[piece_pos.1 - 1][piece_pos.0].colour != piece.colour {
+<<<<<<< HEAD
                     moves;
+=======
+                    if !self.is_check(&(piece_pos.0, piece_pos.1 - 1), piece.colour) {
+                        moves.push((piece_pos.0, piece_pos.1 - 1));
+                    }
                 }
+                //else cant move there
+
             } else {
-                moves.push((piece_pos.1 - 1, piece_pos.0));
+                if !self.is_check(&(piece_pos.0, piece_pos.1 - 1), piece.colour) {
+                    moves.push((piece_pos.0, piece_pos.1 - 1));
+                }
+            }
+
+            //up right
+            if piece_pos.0 != 7 {
+                if self.pieces[piece_pos.1 - 1][piece_pos.0 + 1].colour != Colour::Empty {
+                    //if not same colour can take piece
+                    // TODO: check that position being moved to isn't under check 
+                    if self.pieces[piece_pos.1 - 1][piece_pos.0 + 1].colour != piece.colour {
+                        if !self.is_check(&(piece_pos.0 + 1, piece_pos.1 - 1), piece.colour) {
+                            moves.push((piece_pos.0 + 1, piece_pos.1 - 1));
+                        }
+                    }
+                    //else cant move there
+    
+                } else {
+                    if !self.is_check(&(piece_pos.0 + 1, piece_pos.1 - 1), piece.colour) {
+                        moves.push((piece_pos.0 + 1, piece_pos.1 - 1));
+                    }
+>>>>>>> 0acaaf90c50265f16867f686cab45bc46dcb5434
+                }
+            }
+            //up left
+            if piece_pos.0 != 0 {
+                if self.pieces[piece_pos.1 - 1][piece_pos.0 - 1].colour != Colour::Empty {
+                    //if not same colour can take piece
+                    // TODO: check that position being moved to isn't under check 
+                    if self.pieces[piece_pos.1 - 1][piece_pos.0 - 1].colour != piece.colour {
+                        if !self.is_check(&(piece_pos.0 - 1, piece_pos.1 - 1), piece.colour) {
+                            moves.push((piece_pos.0 - 1, piece_pos.1 - 1));
+                        }
+                    }
+                    //else cant move there
+    
+                } else {
+                    if !self.is_check(&(piece_pos.0 - 1, piece_pos.1 - 1), piece.colour) {
+                        moves.push((piece_pos.0 - 1, piece_pos.1 - 1));
+                    }
+                }
             }
         }
-        vec![]
+
+        //left
+        if piece_pos.0 != 0 {
+            if self.pieces[piece_pos.1][piece_pos.0 - 1].colour != Colour::Empty {
+                //if not same colour can take piece
+                // TODO: check that position being moved to isn't under check 
+                if self.pieces[piece_pos.1][piece_pos.0 - 1].colour != piece.colour {
+                    if !self.is_check(&(piece_pos.0 - 1, piece_pos.1), piece.colour) {
+                        moves.push((piece_pos.0 - 1, piece_pos.1));
+                    }
+                }
+                //else cant move there
+
+            } else {
+                if !self.is_check(&(piece_pos.0 - 1, piece_pos.1), piece.colour) {
+                    moves.push((piece_pos.0 - 1, piece_pos.1));
+                }
+            }
+        }
+        //right
+        if piece_pos.0 != 7 {
+            if self.pieces[piece_pos.1][piece_pos.0 + 1].colour != Colour::Empty {
+                //if not same colour can take piece
+                // TODO: check that position being moved to isn't under check 
+                if self.pieces[piece_pos.1][piece_pos.0 + 1].colour != piece.colour {
+                    if !self.is_check(&(piece_pos.0 + 1, piece_pos.1), piece.colour) {
+                        moves.push((piece_pos.0 + 1, piece_pos.1));
+                    }
+                }
+                //else cant move there
+
+            } else {
+                if !self.is_check(&(piece_pos.0 + 1, piece_pos.1), piece.colour) {
+                    moves.push((piece_pos.0 + 1, piece_pos.1));
+                }
+            }
+        }
+
+        //down
+        if piece_pos.1 != 7 {
+
+            if self.pieces[piece_pos.1 + 1][piece_pos.0].colour != Colour::Empty {
+                //if not same colour can take piece
+                // TODO: check that position being moved to isn't under check 
+                if self.pieces[piece_pos.1 + 1][piece_pos.0].colour != piece.colour {
+                    if !self.is_check(&(piece_pos.0, piece_pos.1 + 1), piece.colour) {
+                        moves.push((piece_pos.0, piece_pos.1 + 1));
+                    }
+                }
+                //else cant move there
+
+            } else {
+                if !self.is_check(&(piece_pos.0, piece_pos.1 + 1), piece.colour) {
+                    moves.push((piece_pos.0, piece_pos.1 + 1));
+                }
+            }
+            
+            //up right
+            if piece_pos.0 != 7 {
+                if self.pieces[piece_pos.1 + 1][piece_pos.0 + 1].colour != Colour::Empty {
+                    //if not same colour can take piece
+                    // TODO: check that position being moved to isn't under check 
+                    if self.pieces[piece_pos.1 + 1][piece_pos.0 + 1].colour != piece.colour {
+                        if !self.is_check(&(piece_pos.0 + 1, piece_pos.1 + 1), piece.colour) {
+                            moves.push((piece_pos.0 + 1, piece_pos.1 + 1));
+                        }
+                    }
+                    //else cant move there
+    
+                } else {
+                    if !self.is_check(&(piece_pos.0 + 1, piece_pos.1 + 1), piece.colour) {
+                        moves.push((piece_pos.0 + 1, piece_pos.1 + 1));
+                    }
+                }
+            }
+            //up left
+            if piece_pos.0 != 0 {
+                if self.pieces[piece_pos.1 + 1][piece_pos.0 - 1].colour != Colour::Empty {
+                    //if not same colour can take piece
+                    // TODO: check that position being moved to isn't under check 
+                    if self.pieces[piece_pos.1 + 1][piece_pos.0 - 1].colour != piece.colour {
+                        if !self.is_check(&(piece_pos.0 - 1, piece_pos.1 + 1), piece.colour) {
+                            moves.push((piece_pos.0 - 1, piece_pos.1 + 1));
+                        }
+                    }
+                    //else cant move there
+    
+                } else {
+                    if !self.is_check(&(piece_pos.0 - 1, piece_pos.1 + 1), piece.colour) {
+                        moves.push((piece_pos.0 - 1, piece_pos.1 + 1));
+                    }
+                }
+            }
+        }
+
+        moves
     }
 
     //returns list of coords of possible queen moves
     fn queen_moves(&self, piece_pos: &(usize, usize)) -> Vec<(usize, usize)> {
-        vec![]
+        //just combine rook and bishop moves nice
+        //vector of unknown size to which we will push the moves
+        let mut moves = self.bishop_moves(piece_pos);
+        let mut b = self.castle_moves(piece_pos);
+
+        moves.append(&mut b);
+        //yeet
+        moves
+    }
+
+    pub fn is_check(&self, position: &(usize, usize), col: Colour) -> bool {
+        for i in 0..8 {
+            for j in 0..8 {
+                let piece = self.pieces[j][i];
+                if piece.colour == other(&col) {
+                    let moves = self.get_piece_moves(&(i, j));
+                    if moves.contains(&position) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        false
+    }
+
+    fn get_king_location(&self, col: &Colour) -> Option<(usize, usize)> {
+        let mut king_loc: (usize, usize) = (10, 10);
+        'outer: for i in 0..8 { //x
+            for j in 0..8 { //y
+                let piece = self.pieces[j][i];
+                if piece.character == '♔' && piece.colour == *col {
+                    king_loc = (i, j);
+                    break 'outer
+                }
+            }
+        }    
+        
+        if king_loc == (10, 10) {return None}
+        Some(king_loc)
     }
 }
 
 fn convert(position: &str) -> Option<(usize, usize)> {
-    let coords: Vec<&str> = position.split(",").collect();
-    if coords.len() != 2 {
+    //let coords: Vec<&str> = position.split(",").collect();
+    if position.len() != 2 {
         return None    //poor formatting
     } else {
-        let x: usize = match coords[0].trim().parse() {
-            Ok(num) => if num < 8 {num} else {println!("Coord outside board");
-                                                 return None},
-            Err(_) => return None,  //not a number
+
+        let b: u8 = position.as_bytes()[0];
+        let c: u8 = position.as_bytes()[1];
+        let x: usize = match b as char {
+            'A' | 'a' => 0,
+            'B' | 'b' => 1,
+            'C' | 'c' => 2,
+            'D' | 'd' => 3,
+            'E' | 'e' => 4,
+            'F' | 'f' => 5,
+            'G' | 'g' => 6,
+            'H' | 'h' => 7,
+            _ => return None,
         };
-        let y: usize = match coords[1].trim().parse() {
-            Ok(num) => if num < 8 {num} else {println!("Coord outside board");
+        
+        //this code is disgusting and hacky but it seems to work
+        //convert char to u32
+        //subtract from 8 then convert to usize?
+        let y: usize = match (c as char).to_digit(10) {
+            Some(num) => if num < 8 && num >= 1 {(8-num) as usize} else {println!("Coord outside board");
                                                 return None},
-            Err(_) => return None,  //not a number
+            None => return None,  //not a number
         };
         return Some((x, y))
+    }
+}
+
+fn other(col: &Colour) -> Colour {
+    match col {
+        Colour::White => Colour::Black,
+        Colour::Black => Colour::White,
+        _ => Colour::Empty,
     }
 }
