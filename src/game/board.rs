@@ -26,7 +26,7 @@ impl Board {
         //starting position
         //hardcoded - could seperate into another files
         let mut p = [[Piece{colour: Colour::Empty, character: '.'}; 8]; 8];
-        p[0][0] = Piece{character:'c', colour:Colour::Black};     p[6][0] = Piece{character:'p', colour:Colour::White};
+        p[0][0] = Piece{character:'\u{265C}', colour:Colour::Black};     p[6][0] = Piece{character:'p', colour:Colour::White};
         p[0][1] = Piece{character:'h', colour:Colour::Black};     p[6][1] = Piece{character:'p', colour:Colour::White};
         p[0][2] = Piece{character:'b', colour:Colour::Black};     p[6][2] = Piece{character:'p', colour:Colour::White};
         p[0][3] = Piece{character:'q', colour:Colour::Black};     p[6][3] = Piece{character:'p', colour:Colour::White};
@@ -34,7 +34,7 @@ impl Board {
         p[0][5] = Piece{character:'b', colour:Colour::Black};     p[6][5] = Piece{character:'p', colour:Colour::White};
         p[0][6] = Piece{character:'h', colour:Colour::Black};     p[6][6] = Piece{character:'p', colour:Colour::White};
         p[0][7] = Piece{character:'c', colour:Colour::Black};     p[6][7] = Piece{character:'p', colour:Colour::White};
-        p[1][0] = Piece{character:'p', colour:Colour::Black};     p[7][0] = Piece{character:'c', colour:Colour::White};
+        p[1][0] = Piece{character:'p', colour:Colour::Black};     p[7][0] = Piece{character:'\u{2656}', colour:Colour::White};
         p[1][1] = Piece{character:'p', colour:Colour::Black};     p[7][1] = Piece{character:'h', colour:Colour::White};
         p[1][2] = Piece{character:'p', colour:Colour::Black};     p[7][2] = Piece{character:'b', colour:Colour::White};
         p[1][3] = Piece{character:'p', colour:Colour::Black};     p[7][3] = Piece{character:'q', colour:Colour::White};
@@ -413,7 +413,7 @@ impl Board {
                 //if not same colour can take piece
                 // TODO: check that position being moved to isn't under check 
                 if self.pieces[piece_pos.1 - 1][piece_pos.0].colour != piece.colour {
-                    moves
+                    moves;
                 }
             } else {
                 moves.push((piece_pos.1 - 1, piece_pos.0));
