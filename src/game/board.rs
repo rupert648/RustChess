@@ -310,7 +310,6 @@ impl Board {
 
     //returns list of coords of possible knight moves
     pub fn knight_moves(&self, piece_pos: &(usize, usize)) -> Vec<(usize, usize)> {
-        //TODO: Implement this shit
         let piece_col = self.pieces[piece_pos.1][piece_pos.0].colour;
         let mut moves: Vec<(usize, usize)> = Vec::new();
 
@@ -474,7 +473,6 @@ impl Board {
         if piece_pos.1 != 0 {
             if self.pieces[piece_pos.1 - 1][piece_pos.0].colour != Colour::Empty {
                 //if not same colour can take piece
-                // TODO: check that position being moved to isn't under check 
                 if self.pieces[piece_pos.1 - 1][piece_pos.0].colour != piece.colour {
                     if !self.is_check(&(piece_pos.0, piece_pos.1 - 1)) {
                         moves.push((piece_pos.0, piece_pos.1 - 1));
@@ -492,7 +490,6 @@ impl Board {
             if piece_pos.0 != 7 {
                 if self.pieces[piece_pos.1 - 1][piece_pos.0 + 1].colour != Colour::Empty {
                     //if not same colour can take piece
-                    // TODO: check that position being moved to isn't under check 
                     if self.pieces[piece_pos.1 - 1][piece_pos.0 + 1].colour != piece.colour {
                         if !self.is_check(&(piece_pos.0 + 1, piece_pos.1 - 1)) {
                             moves.push((piece_pos.0 + 1, piece_pos.1 - 1));
@@ -510,7 +507,6 @@ impl Board {
             if piece_pos.0 != 0 {
                 if self.pieces[piece_pos.1 - 1][piece_pos.0 - 1].colour != Colour::Empty {
                     //if not same colour can take piece
-                    // TODO: check that position being moved to isn't under check 
                     if self.pieces[piece_pos.1 - 1][piece_pos.0 - 1].colour != piece.colour {
                         if !self.is_check(&(piece_pos.0 - 1, piece_pos.1 - 1)) {
                             moves.push((piece_pos.0 - 1, piece_pos.1 - 1));
@@ -530,7 +526,6 @@ impl Board {
         if piece_pos.0 != 0 {
             if self.pieces[piece_pos.1][piece_pos.0 - 1].colour != Colour::Empty {
                 //if not same colour can take piece
-                // TODO: check that position being moved to isn't under check 
                 if self.pieces[piece_pos.1][piece_pos.0 - 1].colour != piece.colour {
                     if !self.is_check(&(piece_pos.0 - 1, piece_pos.1)) {
                         moves.push((piece_pos.0 - 1, piece_pos.1));
@@ -548,7 +543,6 @@ impl Board {
         if piece_pos.0 != 7 {
             if self.pieces[piece_pos.1][piece_pos.0 + 1].colour != Colour::Empty {
                 //if not same colour can take piece
-                // TODO: check that position being moved to isn't under check 
                 if self.pieces[piece_pos.1][piece_pos.0 + 1].colour != piece.colour {
                     if !self.is_check(&(piece_pos.0 + 1, piece_pos.1)) {
                         moves.push((piece_pos.0 + 1, piece_pos.1));
@@ -568,7 +562,6 @@ impl Board {
 
             if self.pieces[piece_pos.1 + 1][piece_pos.0].colour != Colour::Empty {
                 //if not same colour can take piece
-                // TODO: check that position being moved to isn't under check 
                 if self.pieces[piece_pos.1 + 1][piece_pos.0].colour != piece.colour {
                     if !self.is_check(&(piece_pos.0, piece_pos.1 + 1)) {
                         moves.push((piece_pos.0, piece_pos.1 + 1));
@@ -586,7 +579,6 @@ impl Board {
             if piece_pos.0 != 7 {
                 if self.pieces[piece_pos.1 + 1][piece_pos.0 + 1].colour != Colour::Empty {
                     //if not same colour can take piece
-                    // TODO: check that position being moved to isn't under check 
                     if self.pieces[piece_pos.1 + 1][piece_pos.0 + 1].colour != piece.colour {
                         if !self.is_check(&(piece_pos.0 + 1, piece_pos.1 + 1)) {
                             moves.push((piece_pos.0 + 1, piece_pos.1 + 1));
@@ -604,7 +596,6 @@ impl Board {
             if piece_pos.0 != 0 {
                 if self.pieces[piece_pos.1 + 1][piece_pos.0 - 1].colour != Colour::Empty {
                     //if not same colour can take piece
-                    // TODO: check that position being moved to isn't under check 
                     if self.pieces[piece_pos.1 + 1][piece_pos.0 - 1].colour != piece.colour {
                         if !self.is_check(&(piece_pos.0 - 1, piece_pos.1 + 1)) {
                             moves.push((piece_pos.0 - 1, piece_pos.1 + 1));
