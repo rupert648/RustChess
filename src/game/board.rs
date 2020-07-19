@@ -42,6 +42,7 @@ impl Board {
         p[1][5] = Piece{character:'\u{265F}', colour:Colour::Black};     p[7][5] = Piece{character:'♗', colour:Colour::White};
         p[1][6] = Piece{character:'\u{265F}', colour:Colour::Black};     p[7][6] = Piece{character:'♘', colour:Colour::White};
         p[1][7] = Piece{character:'\u{265F}', colour:Colour::Black};     p[7][7] = Piece{character:'♖', colour:Colour::White};
+        
 
         //return the board
         Board {
@@ -83,11 +84,13 @@ impl Board {
         //check its a valid move
         if self.valid_move(&piece_pos, &target_pos, &turn) {
 
-            let king_loc = self.get_king_location(&turn);
-
-            if self.is_check(&(0,0), Colour::White) {
-                println!("is check against {}", if turn == Colour::White {"white"} else {"black"});
+            match self.get_king_location(&other(&turn)) {
+                Some(loc) => if self.is_check(&loc) {
+                                println!("is check against {:?}", other(&turn));
+                            },
+                None => println!("where the fuck is the king"),
             }
+
             return true;
         }
         //check both positions on board first
@@ -108,17 +111,11 @@ impl Board {
         if self.check_valid_piece(&piece_pos, &turn) {
             
             let moves = self.get_piece_moves(piece_pos);
-           
+            // for aMove in moves.into_iter() { 
+            //     println!("{}, {}", aMove.0, aMove.1);
+            // }
             
-            //  for a_move in moves.iter() {
-            //     print!("{}, {}", a_move.0, a_move.1);
-
-            //     if a_move == target_pos {
-            //         print!(" <-- this one");
-            //     } 
-            //     println!();
-            //  }
-
+        
             if moves.contains(target_pos) {
                 self.pieces[target_pos.1][target_pos.0].character = piece.character;
                 self.pieces[target_pos.1][target_pos.0].colour = piece.colour;
@@ -155,7 +152,7 @@ impl Board {
         match piece.character {
             //each piece
             '♙' | '\u{265F}' => {self.pawn_moves(piece_pos)},
-            '♖' | '♜' => {self.castle_moves(piece_pos)},
+            '♖' | '♜' => {self.rook_moves(piece_pos)},
             '♘' | '♞' => {self.knight_moves(piece_pos)},
             '♗' | '♝' => {self.bishop_moves(piece_pos)},
             '♔' | '♚' => {self.king_moves(piece_pos)},
@@ -239,7 +236,7 @@ impl Board {
     }
 
     //returns list of coords of possible castle moves
-    pub fn castle_moves(&self, piece_pos: &(usize, usize)) -> Vec<(usize, usize)> {
+    pub fn rook_moves(&self, piece_pos: &(usize, usize)) -> Vec<(usize, usize)> {
         let piece = self.pieces[piece_pos.1][piece_pos.0];
         //vector of unknown size to which we will push the moves
         //convert into slice then return
@@ -314,13 +311,68 @@ impl Board {
     //returns list of coords of possible knight moves
     pub fn knight_moves(&self, piece_pos: &(usize, usize)) -> Vec<(usize, usize)> {
         //TODO: Implement this shit
+        let piece_col = self.pieces[piece_pos.1][piece_pos.0].colour;
+        let mut moves: Vec<(usize, usize)> = Vec::new();
 
-        // let piece = self.pieces[piece_pos.1][piece_pos.0];
-        // //vector of unknown size to which we will push the moves
-        // //convert into slice then return
-        // let mut moves: Vec<(usize, usize)> = Vec::new();
+        //right side
+        if piece_pos.0 + 2 <= 7 && piece_pos.1 > 0 {
+            if self.check_knight_move(piece_pos.0 + 2, piece_pos.1-1, piece_col) {
+                moves.push((piece_pos.0+2, piece_pos.1-1));
+            }
+        }
+        if piece_pos.0 + 2 <= 7 && piece_pos.1 < 7 {
+            if self.check_knight_move(piece_pos.0 + 2, piece_pos.1+1, piece_col) {
+                moves.push((piece_pos.0+2, piece_pos.1+1));
+            }
+        }
+        if piece_pos.0 + 1 <= 7 && piece_pos.1 > 1 {
+            if self.check_knight_move(piece_pos.0+1, piece_pos.1 - 2, piece_col) {
+                moves.push((piece_pos.0+1, piece_pos.1-2));
+            }
+        }
+        if piece_pos.0 + 1 <= 7 && piece_pos.1 < 6 {
+            if self.check_knight_move(piece_pos.0 + 1, piece_pos.1 + 2, piece_col) {
+                moves.push((piece_pos.0+1, piece_pos.1+2));
+            }
+        }
 
-        vec![]
+        // left side
+        if piece_pos.0 > 1 && piece_pos.1 > 0 {
+            if self.check_knight_move(piece_pos.0 - 2, piece_pos.1-1, piece_col) {
+                moves.push((piece_pos.0 - 2, piece_pos.1-1));
+            }
+        }
+        if piece_pos.0 > 1 && piece_pos.1 < 7 {
+            if self.check_knight_move(piece_pos.0 - 2, piece_pos.1+1, piece_col) {
+                moves.push((piece_pos.0 - 2, piece_pos.1+1));
+            }
+        }
+        if piece_pos.0 > 0 && piece_pos.1 > 1 {
+            if self.check_knight_move(piece_pos.0-1, piece_pos.1 - 2, piece_col) {
+                moves.push((piece_pos.0-1, piece_pos.1-2));
+            }
+        }
+        if piece_pos.0 > 0 && piece_pos.1 < 6 {
+            if self.check_knight_move(piece_pos.0 - 1, piece_pos.1 + 2, piece_col) {
+                moves.push((piece_pos.0-1, piece_pos.1+2));
+            }
+        }
+
+        // returns moves
+        moves
+    }
+
+    fn check_knight_move(&self, x: usize, y:usize, col: Colour) -> bool {
+        let piece_colour = self.pieces[y][x].colour;
+
+        if piece_colour != Colour::Empty {
+            if piece_colour != col {
+                return true;
+            }
+        } else {
+            return true;
+        }
+        false
     }
 
     //returns list of coords of possible bishop moves
@@ -331,8 +383,8 @@ impl Board {
         let mut moves: Vec<(usize, usize)> = Vec::new();
 
         //iterate right
-        let mut j = 0;  //j is the y down direction ?
-        let mut j_up = 8;   //j_up is the y up direction ?  //so we dont do too many for loops lol
+        let mut j = piece_pos.1;  //j is the y down direction ?
+        let mut j_up = piece_pos.1;   //j_up is the y up direction ?  //so we dont do too many for loops lol
         for i in (piece_pos.0+1)..8 {
             j = j + 1;    //iterate down one
             
@@ -352,8 +404,9 @@ impl Board {
             } 
 
             //now check the up direction
-            j_up = j_up - 1;    //iterate up one
-            if j_up >= 0 {
+            
+            if j_up > 0 {
+                j_up = j_up - 1;    //iterate up one
                 if self.pieces[j_up][i].colour != Colour::Empty {
                     //if same colour simply break from loop
                     if self.pieces[j_up][i].colour == piece.colour {
@@ -370,8 +423,8 @@ impl Board {
         }
 
         //iterate left
-        j = 0;
-        j_up = 0;
+        j = piece_pos.1;
+        j_up = piece_pos.1;
         for i in (0..piece_pos.0).rev() {
             if j < 8 {  //prevents out of bounds exception
                 if self.pieces[j][i].colour != Colour::Empty {
@@ -389,8 +442,9 @@ impl Board {
             } 
 
             //now check the up direction
-            j_up = j_up - 1;    //iterate up one
-            if j_up >= 0 {
+            
+            if j_up > 0 {
+                j_up = j_up - 1;    //iterate up one
                 if self.pieces[j_up][i].colour != Colour::Empty {
                     //if same colour simply break from loop
                     if self.pieces[j_up][i].colour == piece.colour {
@@ -422,17 +476,14 @@ impl Board {
                 //if not same colour can take piece
                 // TODO: check that position being moved to isn't under check 
                 if self.pieces[piece_pos.1 - 1][piece_pos.0].colour != piece.colour {
-<<<<<<< HEAD
-                    moves;
-=======
-                    if !self.is_check(&(piece_pos.0, piece_pos.1 - 1), piece.colour) {
+                    if !self.is_check(&(piece_pos.0, piece_pos.1 - 1)) {
                         moves.push((piece_pos.0, piece_pos.1 - 1));
                     }
                 }
                 //else cant move there
 
             } else {
-                if !self.is_check(&(piece_pos.0, piece_pos.1 - 1), piece.colour) {
+                if !self.is_check(&(piece_pos.0, piece_pos.1 - 1)) {
                     moves.push((piece_pos.0, piece_pos.1 - 1));
                 }
             }
@@ -443,17 +494,16 @@ impl Board {
                     //if not same colour can take piece
                     // TODO: check that position being moved to isn't under check 
                     if self.pieces[piece_pos.1 - 1][piece_pos.0 + 1].colour != piece.colour {
-                        if !self.is_check(&(piece_pos.0 + 1, piece_pos.1 - 1), piece.colour) {
+                        if !self.is_check(&(piece_pos.0 + 1, piece_pos.1 - 1)) {
                             moves.push((piece_pos.0 + 1, piece_pos.1 - 1));
                         }
                     }
                     //else cant move there
     
                 } else {
-                    if !self.is_check(&(piece_pos.0 + 1, piece_pos.1 - 1), piece.colour) {
+                    if !self.is_check(&(piece_pos.0 + 1, piece_pos.1 - 1)) {
                         moves.push((piece_pos.0 + 1, piece_pos.1 - 1));
                     }
->>>>>>> 0acaaf90c50265f16867f686cab45bc46dcb5434
                 }
             }
             //up left
@@ -462,14 +512,14 @@ impl Board {
                     //if not same colour can take piece
                     // TODO: check that position being moved to isn't under check 
                     if self.pieces[piece_pos.1 - 1][piece_pos.0 - 1].colour != piece.colour {
-                        if !self.is_check(&(piece_pos.0 - 1, piece_pos.1 - 1), piece.colour) {
+                        if !self.is_check(&(piece_pos.0 - 1, piece_pos.1 - 1)) {
                             moves.push((piece_pos.0 - 1, piece_pos.1 - 1));
                         }
                     }
                     //else cant move there
     
                 } else {
-                    if !self.is_check(&(piece_pos.0 - 1, piece_pos.1 - 1), piece.colour) {
+                    if !self.is_check(&(piece_pos.0 - 1, piece_pos.1 - 1)) {
                         moves.push((piece_pos.0 - 1, piece_pos.1 - 1));
                     }
                 }
@@ -482,14 +532,14 @@ impl Board {
                 //if not same colour can take piece
                 // TODO: check that position being moved to isn't under check 
                 if self.pieces[piece_pos.1][piece_pos.0 - 1].colour != piece.colour {
-                    if !self.is_check(&(piece_pos.0 - 1, piece_pos.1), piece.colour) {
+                    if !self.is_check(&(piece_pos.0 - 1, piece_pos.1)) {
                         moves.push((piece_pos.0 - 1, piece_pos.1));
                     }
                 }
                 //else cant move there
 
             } else {
-                if !self.is_check(&(piece_pos.0 - 1, piece_pos.1), piece.colour) {
+                if !self.is_check(&(piece_pos.0 - 1, piece_pos.1)) {
                     moves.push((piece_pos.0 - 1, piece_pos.1));
                 }
             }
@@ -500,14 +550,14 @@ impl Board {
                 //if not same colour can take piece
                 // TODO: check that position being moved to isn't under check 
                 if self.pieces[piece_pos.1][piece_pos.0 + 1].colour != piece.colour {
-                    if !self.is_check(&(piece_pos.0 + 1, piece_pos.1), piece.colour) {
+                    if !self.is_check(&(piece_pos.0 + 1, piece_pos.1)) {
                         moves.push((piece_pos.0 + 1, piece_pos.1));
                     }
                 }
                 //else cant move there
 
             } else {
-                if !self.is_check(&(piece_pos.0 + 1, piece_pos.1), piece.colour) {
+                if !self.is_check(&(piece_pos.0 + 1, piece_pos.1)) {
                     moves.push((piece_pos.0 + 1, piece_pos.1));
                 }
             }
@@ -520,14 +570,14 @@ impl Board {
                 //if not same colour can take piece
                 // TODO: check that position being moved to isn't under check 
                 if self.pieces[piece_pos.1 + 1][piece_pos.0].colour != piece.colour {
-                    if !self.is_check(&(piece_pos.0, piece_pos.1 + 1), piece.colour) {
+                    if !self.is_check(&(piece_pos.0, piece_pos.1 + 1)) {
                         moves.push((piece_pos.0, piece_pos.1 + 1));
                     }
                 }
                 //else cant move there
 
             } else {
-                if !self.is_check(&(piece_pos.0, piece_pos.1 + 1), piece.colour) {
+                if !self.is_check(&(piece_pos.0, piece_pos.1 + 1)) {
                     moves.push((piece_pos.0, piece_pos.1 + 1));
                 }
             }
@@ -538,14 +588,14 @@ impl Board {
                     //if not same colour can take piece
                     // TODO: check that position being moved to isn't under check 
                     if self.pieces[piece_pos.1 + 1][piece_pos.0 + 1].colour != piece.colour {
-                        if !self.is_check(&(piece_pos.0 + 1, piece_pos.1 + 1), piece.colour) {
+                        if !self.is_check(&(piece_pos.0 + 1, piece_pos.1 + 1)) {
                             moves.push((piece_pos.0 + 1, piece_pos.1 + 1));
                         }
                     }
                     //else cant move there
     
                 } else {
-                    if !self.is_check(&(piece_pos.0 + 1, piece_pos.1 + 1), piece.colour) {
+                    if !self.is_check(&(piece_pos.0 + 1, piece_pos.1 + 1)) {
                         moves.push((piece_pos.0 + 1, piece_pos.1 + 1));
                     }
                 }
@@ -556,14 +606,14 @@ impl Board {
                     //if not same colour can take piece
                     // TODO: check that position being moved to isn't under check 
                     if self.pieces[piece_pos.1 + 1][piece_pos.0 - 1].colour != piece.colour {
-                        if !self.is_check(&(piece_pos.0 - 1, piece_pos.1 + 1), piece.colour) {
+                        if !self.is_check(&(piece_pos.0 - 1, piece_pos.1 + 1)) {
                             moves.push((piece_pos.0 - 1, piece_pos.1 + 1));
                         }
                     }
                     //else cant move there
     
                 } else {
-                    if !self.is_check(&(piece_pos.0 - 1, piece_pos.1 + 1), piece.colour) {
+                    if !self.is_check(&(piece_pos.0 - 1, piece_pos.1 + 1)) {
                         moves.push((piece_pos.0 - 1, piece_pos.1 + 1));
                     }
                 }
@@ -578,14 +628,15 @@ impl Board {
         //just combine rook and bishop moves nice
         //vector of unknown size to which we will push the moves
         let mut moves = self.bishop_moves(piece_pos);
-        let mut b = self.castle_moves(piece_pos);
+        let mut b = self.rook_moves(piece_pos);
 
         moves.append(&mut b);
         //yeet
         moves
     }
 
-    pub fn is_check(&self, position: &(usize, usize), col: Colour) -> bool {
+    pub fn is_check(&self, position: &(usize, usize)) -> bool {
+        let col = self.pieces[position.1][position.0].colour;
         for i in 0..8 {
             for j in 0..8 {
                 let piece = self.pieces[j][i];
@@ -606,7 +657,7 @@ impl Board {
         'outer: for i in 0..8 { //x
             for j in 0..8 { //y
                 let piece = self.pieces[j][i];
-                if piece.character == '♔' && piece.colour == *col {
+                if (piece.character == '♔' || piece.character == '♚') && piece.colour == *col {
                     king_loc = (i, j);
                     break 'outer
                 }
@@ -616,6 +667,7 @@ impl Board {
         if king_loc == (10, 10) {return None}
         Some(king_loc)
     }
+    
 }
 
 fn convert(position: &str) -> Option<(usize, usize)> {
@@ -642,7 +694,7 @@ fn convert(position: &str) -> Option<(usize, usize)> {
         //convert char to u32
         //subtract from 8 then convert to usize?
         let y: usize = match (c as char).to_digit(10) {
-            Some(num) => if num < 8 && num >= 1 {(8-num) as usize} else {println!("Coord outside board");
+            Some(num) => if num <= 8 && num >= 1 {(8-num) as usize} else {println!("Coord outside board");
                                                 return None},
             None => return None,  //not a number
         };
