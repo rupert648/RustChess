@@ -7,20 +7,27 @@ pub enum Colour {
 }
 
 #[derive(Debug, Copy, Clone)]
+/// A Piece is represented here by a colour and its characterS
 pub struct Piece {
-    colour: Colour,
-    character: char,
+    /// A Piece must have a colour
+    pub colour: Colour,
+    /// The character that this piece represents
+    pub character: char,
 }
 
+/// A Board is represented by its collection of pieces, and the scores of the two colours
 pub struct Board {
-    //2d array of 64 piece intances
-    pieces: [[Piece; 8]; 8],  
+    /// 2d array of 64 piece intances
+    pub pieces: [[Piece; 8]; 8],  
+    /// The score of the white team
     white_score: i8,
+    /// The score of the black team
     black_score: i8,
 }
 
 impl Board {
 
+    /// Returns a new instance of the board.
     pub fn new() -> Board { //h for horse
 
         //starting position
@@ -44,7 +51,7 @@ impl Board {
         p[1][7] = Piece{character:'\u{265F}', colour:Colour::Black};     p[7][7] = Piece{character:'♖', colour:Colour::White};
         
 
-        //return the board
+        //return the new board
         Board {
             pieces: p,
             white_score: 0,
@@ -52,40 +59,54 @@ impl Board {
         }
     }
 
+    /// Function prints the board in the correct format
+    /// 
+    /// Takes itself and using the 2d array of pieces outputs a nicely formatted board.
     pub fn print_board(&self) {
-        let mut line: i8 = 8;
+        // the line number to print
+        let mut line: usize = self.pieces.len();
+        // spacing
         println!();
-        print!("8 ");
+        print!("{} ", line);
+        // iterate through board pieces
         for (_i, row) in self.pieces.iter().enumerate() {
+            
             for (_y, col) in row.iter().enumerate() {
                 print!("{} ", col.character);
+                // spacing/formatting
                 if col.character == '.' {print!(" ");}
             }
+            if line == 5 {print!("    White score: {}", self.white_score)}
+            if line == 4 {print!("    Black score: {}", self.black_score)}
             println!();
             line = line-1;
             if line != 0 { print!("{} ", line);}
         }
+        // bottom coordinates
         println!("  A  B  C  D  E  F  G  H");
+        // spacing
         println!();
     }
 
-    pub fn make_move(&mut self, piece_pos: &String, target_pos: &String, turn: Colour) -> bool {
-        //convert to (x, y);
-        //checks that coordinates are valid numbers and on the board
-        let piece_pos = match convert(piece_pos.trim()) {
-            Some(coords) => coords,
-            None => {println!("Bad piece position"); return false}
-        };
-        let target_pos = match convert(target_pos.trim()) {
-            Some(coords) => coords,
-            None => {println!("Bad target position"); return false}
-        };
+    /// Function takes the coordinates of the piece to move and the target location, and attempts to make that move.
+    /// 
+    /// # Arguments
+    /// 
+    /// * `piece_pos` - The position of the piece trying to be moved.
+    /// * `target_pos` - The postion that the piece is trying to be moved to.
+    /// * `turn` - Which colour's turn it currently is.
+    /// 
+    pub fn make_move(&mut self, piece_pos: (usize, usize), target_pos: (usize, usize), turn: Colour) -> bool {
 
         //check its a valid move
         if self.valid_move(&piece_pos, &target_pos, &turn) {
 
             match self.get_king_location(&other(&turn)) {
                 Some(loc) => if self.is_check(&loc) {
+                                //check for check mate   
+                                if self.is_checkmate(&loc) { println!("checkmate against {:?}", other(&turn)); 
+                                                            println!("{:?} wins!!", turn);
+                                                            std::process::exit(1);}                 
                                 println!("is check against {:?}", other(&turn));
                             },
                 None => println!("where the fuck is the king"),
@@ -93,13 +114,7 @@ impl Board {
 
             return true;
         }
-        //check both positions on board first
-        // if (on_board(piece_pos) && on_board(target_pos)) {
 
-        // } else {
-        //     println!("Position not on the board!");
-        //     false
-        // }
         false
     }
 
@@ -117,6 +132,11 @@ impl Board {
             
         
             if moves.contains(target_pos) {
+                let target_piece = self.pieces[target_pos.1][target_pos.0];
+                if target_piece.colour != Colour::Empty {
+                    //update the score
+                    self.update_score(target_piece, &turn);
+                }
                 self.pieces[target_pos.1][target_pos.0].character = piece.character;
                 self.pieces[target_pos.1][target_pos.0].colour = piece.colour;
                 self.pieces[piece_pos.1][piece_pos.0].character = '.';
@@ -145,7 +165,7 @@ impl Board {
         }
     }
 
-    //easier to implment this function now, rather than check that the single move is valid, as we can reuse in the AI
+    //easier to implement this function now, rather than check that the single move is valid, as we can reuse in the AI
     pub fn get_piece_moves(&self, piece_pos: &(usize, usize)) -> Vec<(usize, usize)> {
         let piece = self.pieces[piece_pos.1][piece_pos.0];
         //pattern match to each piece
@@ -158,6 +178,23 @@ impl Board {
             '♔' | '♚' => {self.king_moves(piece_pos)},
             '♕' | '♛' => {self.queen_moves(piece_pos)},
             _ => vec![]
+        }
+    }
+
+    fn update_score(&mut self, piece: Piece, turn: &Colour) {
+        let score = match piece.character {
+            '♙' | '\u{265F}' => 1,
+            '♖' | '♜' => 5,
+            '♘' | '♞' => 3,
+            '♗' | '♝' => 3,
+            '♔' | '♚' => 9,
+            _ => 0, //shouldnt reach here but just for explicity
+        };
+
+        match turn {
+            Colour::White => self.white_score += score,
+            Colour::Black => self.black_score += score,
+            _ => return,
         }
     }
 
@@ -643,6 +680,17 @@ impl Board {
         false
     }
 
+    pub fn is_checkmate(&self, king_position: &(usize, usize)) -> bool {
+        let moves = self.king_moves(king_position);
+        
+        for a_move in moves.iter() {
+            //if king can move anywhere then return false.
+            if !self.is_check(a_move) {return false}
+        }
+
+        true
+    }
+
     fn get_king_location(&self, col: &Colour) -> Option<(usize, usize)> {
         let mut king_loc: (usize, usize) = (10, 10);
         'outer: for i in 0..8 { //x
@@ -661,8 +709,9 @@ impl Board {
     
 }
 
-fn convert(position: &str) -> Option<(usize, usize)> {
-    //let coords: Vec<&str> = position.split(",").collect();
+pub fn convert(position: &str) -> Option<(usize, usize)> {
+    
+    
     if position.len() != 2 {
         return None    //poor formatting
     } else {
@@ -680,6 +729,8 @@ fn convert(position: &str) -> Option<(usize, usize)> {
             'H' | 'h' => 7,
             _ => return None,
         };
+
+        
         
         //this code is disgusting and hacky but it seems to work
         //convert char to u32
@@ -693,7 +744,7 @@ fn convert(position: &str) -> Option<(usize, usize)> {
     }
 }
 
-fn other(col: &Colour) -> Colour {
+pub fn other(col: &Colour) -> Colour {
     match col {
         Colour::White => Colour::Black,
         Colour::Black => Colour::White,

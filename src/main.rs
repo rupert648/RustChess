@@ -1,7 +1,9 @@
-pub mod game;
+mod game;
+mod board;
+mod ai;
 
 fn main() {
-    
-    game::run_game();
+   //start game
+   game::run_game();
 
 }
